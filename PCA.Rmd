@@ -1,0 +1,71 @@
+---
+title: "PCA of plant species"
+author: "David Ju Nyambe"
+date: "1/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+Principle Component Analysis(P.C.A) is a dimension reduction technique that helps to reduce the amount of dimensions contained by a large dataset without losing much information.  
+
+
+* Helps to visualize data. It is not easy to visualize data that is in 3 dimensions or more.
+* Reduces the chances of overfitting occurring
+* Reducing  the dimensions on a data helps reduce the time taken for any operation performed on the dataset therefore improving performance
+* Datasets may contain information that is not of importance therefore PCA helps to pick out information that is of most importance.
+
+To demonstrate principle Component Analysis in R, The Iris data set that comes in R shall be used.
+## Loading libraries
+
+```{r libraries}
+install.packages("remotes",repos = "http://cran.us.r-project.org")
+install.packages("ggplot2",repos = "http://cran.us.r-project.org")
+remotes::install_github("vqv/ggbiplot", force = TRUE)
+library(ggbiplot)
+
+```
+
+
+## Loading the iris dataset 
+A preview of the iris dataset is performed using str().
+
+```{r pressure, echo=FALSE}
+str(iris)
+```
+
+## Creating the Principle Components
+The Principle components are created using the prcomp(). It is not advisable to use categorical data in principle component analysis therefore the variable(Column) is not to be included.
+```{r principles}
+flowers_components<-prcomp(iris[,-5],scale. = TRUE)
+```
+ the str() is used to observe the object genereated by the prcomp function.
+```{r glimps_components}
+summary(flowers_components)
+```
+
+The  proportion of variance explained by each component is calculated to  help determine the amount of variability explained by each principle component  
+```{r view_component}
+std_dev <- flowers_components$sdev
+variance_explained<-(100*flowers_components$sdev^2)/sum(flowers_components$sdev^2)
+principle_variance <- std_dev^2
+propotion_explained <-data.frame(PC= 1:length(variance_explained),variance_explained=variance_explained)
+propotion_explained
+```
+
+Using proportion of the variance, a scree plot is created to determine how many principle components are to be used in order to get a good percentage of variability.
+
+```{r scree_check}
+ ggplot(data=propotion_explained,aes(x=PC,y=variance_explained))+
+  geom_point(size=2)+
+  geom_line()+theme_bw()+geom_col(fill="steelblue")+scale_x_continuous(breaks=1:nrow(propotion_explained))+
+  labs(title="Scree plot: PCA on scaled data",y="Variance explained (%)",x="PC")
+```
+ Using the rule of elbow its clear to see that two principle components would be needed to explain a good amount of variance.. 
+
+```{r plot}
+ggbiplot(flowers_components,groups=iris[,5],ellipse=TRUE)
+```
